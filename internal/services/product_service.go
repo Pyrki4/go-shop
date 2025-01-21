@@ -5,6 +5,10 @@ import (
 	"github.com/Pyrki4/go-shop/internal/repositories"
 )
 
+type ProductServiceInterface interface {
+	GetAllProducts() []models.Product
+}
+
 type ProductService struct {
 	repo *repositories.ProductRepository
 }

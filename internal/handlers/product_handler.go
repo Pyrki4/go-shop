@@ -5,6 +5,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type ProductHandlerInterface interface {
+	GetAllProducts(c *gin.Context)
+}
+
 type ProductHandler struct {
 	productService *services.ProductService
 }
@@ -16,9 +20,4 @@ func NewProductHandler(productService *services.ProductService) *ProductHandler 
 func (h *ProductHandler) GetAllProducts(c *gin.Context) {
 	products := h.productService.GetAllProducts()
 	c.JSON(200, products)
-}
-
-func RegisterRoutes(r *gin.Engine, productService *services.ProductService) {
-	handler := NewProductHandler(productService)
-	r.GET("/products", handler.GetAllProducts)
 }

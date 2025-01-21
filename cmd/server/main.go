@@ -1,35 +1,37 @@
 package main
 
 import (
+	"log"
+
+	"github.com/Pyrki4/go-shop/internal"
 	"github.com/Pyrki4/go-shop/internal/config"
 	"github.com/Pyrki4/go-shop/internal/handlers"
-	"github.com/Pyrki4/go-shop/internal/repositories"
-	"github.com/Pyrki4/go-shop/internal/services"
 	"github.com/gin-gonic/gin"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 )
 
 func main() {
 	// Загрузка конфигурации
 	cfg := config.Load()
 
-	// Инициализация базы данных
-	db, err := gorm.Open(postgres.Open(cfg.DBURL), &gorm.Config{})
+	// Инициализация контейнера зависимостей
+	ProductHandler, err := internal.InitializeContainer()
 	if err != nil {
-		panic("Failed to connect to database")
+		log.Fatalf("Failed to initialize container: %v", err)
 	}
-
-	// Инициализация репозитория и сервиса
-	productRepo := repositories.NewProductRepository(db)
-	productService := services.NewProductService(productRepo)
 
 	// Инициализация сервера
 	r := gin.Default()
 
 	// Регистрация маршрутов
-	handlers.RegisterRoutes(r, productService)
+	registerRoutes(r, ProductHandler)
 
 	// Запуск сервера
-	r.Run(cfg.ServerAddress)
+	log.Printf("Starting server on :%v", cfg.ServerAddress)
+	if err := r.Run(cfg.ServerAddress); err != nil {
+		log.Fatalf("Failed to start server: %v", err)
+	}
+}
+
+func registerRoutes(r *gin.Engine, productHandler *handlers.ProductHandler) {
+	r.GET("/products", productHandler.GetAllProducts)
 }
